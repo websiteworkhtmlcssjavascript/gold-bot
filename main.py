@@ -3,7 +3,7 @@ import asyncio
 import requests
 from telegram import Bot
 
-BOT_TOKEN = os.getenv("https://t.me/AAB12AAB_BOT")
+BOT_TOKEN = os.getenv("8826488858:AAFLXXaWXnNX00LdJuXT9QweAy1dXTFpt-8")
 GOLD_API_KEY = os.getenv("goldapi-315b0b99d2ec5744f99b0c37edaf77cb-io")
 
 CHANNEL_ID = "@AAB12AAB_BOT"
