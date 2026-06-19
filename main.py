@@ -11,42 +11,48 @@ CHANNEL_ID = "@gold_price_live_2026"
 bot = Bot(token=BOT_TOKEN)
 
 message_id = None
-last_price = None
-
-
-async def get_gold_price():
-    headers = {
-        "x-access-token": GOLD_API_KEY,
-        "Content-Type": "application/json"
-    }
-
-    response = requests.get(
-        "https://www.goldapi.io/api/XAU/USD",
-        headers=headers,
-        timeout=15
-    )
-
-    data = response.json()
-
-    if "error" in data:
-        raise Exception(data["error"])
-
-    return float(data["price"])
-
 
 async def main():
-    global message_id, last_price
+    global message_id
 
     while True:
         try:
-            price = await get_gold_price()
+            headers = {
+                "x-access-token": GOLD_API_KEY,
+                "Content-Type": "application/json"
+            }
+
+            response = requests.get(
+                "https://www.goldapi.io/api/XAU/USD",
+                headers=headers,
+                timeout=20
+            )
+
+            data = response.json()
+
+            if "price" not in data:
+                print(data)
+                await asyncio.sleep(30)
+                continue
+
+            price = float(data["price"])
+
+            upper = price * 1.005
+            lower = price * 0.995
 
             text = f"""
 🟡 GOLD LIVE
 
-💰 XAU/USD : {price}
+💰 Current Price
+{price:.2f} USD
 
-🔄 Update every 10 sec
+📈 Upper Range
+{upper:.2f} USD
+
+📉 Lower Range
+{lower:.2f} USD
+
+⏰ Update every 30 sec
 """
 
             if message_id is None:
@@ -55,23 +61,21 @@ async def main():
                     text=text
                 )
                 message_id = msg.message_id
-                last_price = price
-
             else:
-                if price != last_price:
+                try:
                     await bot.edit_message_text(
                         chat_id=CHANNEL_ID,
                         message_id=message_id,
                         text=text
                     )
-                    last_price = price
+                except Exception:
+                    pass
 
             print("Gold:", price)
 
         except Exception as e:
             print("ERROR:", e)
 
-        await asyncio.sleep(10)
-
+        await asyncio.sleep(30)
 
 asyncio.run(main())
