@@ -2,7 +2,7 @@ import asyncio
 import yfinance as yf
 from telegram import Bot
 
-BOT_TOKEN = "ضع_توكن_البوت_هنا"
+BOT_TOKEN = "8826488858:AAFLXXaWXnNX00LdJuXT9QweAy1dXTFpt-8"
 CHANNEL_ID = "@gold_price_live_2026"
 
 bot = Bot(BOT_TOKEN)
