@@ -22,7 +22,7 @@ async def main():
 
             if df.empty:
                 print("No data")
-                await asyncio.sleep(10)
+                await asyncio.sleep(60)
                 continue
 
             price = float(df["Close"].iloc[-1])
@@ -31,7 +31,7 @@ async def main():
 
 💰 Price: {price:.2f} USD
 
-⏱ Update: 10 sec
+⏱ Update: 60 sec
 """
 
             if message_id is None:
