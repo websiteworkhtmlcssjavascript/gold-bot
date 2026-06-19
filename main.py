@@ -1,51 +1,38 @@
-import os
 import asyncio
-import requests
+import yfinance as yf
 from telegram import Bot
 
-BOT_TOKEN = os.getenv("BOT_TOKEN")
-GOLD_API_KEY = os.getenv("GOLD_API_KEY")
-
+BOT_TOKEN = "ضع_توكن_البوت_هنا"
 CHANNEL_ID = "@gold_price_live_2026"
 
-bot = Bot(token=BOT_TOKEN)
+bot = Bot(BOT_TOKEN)
 
 message_id = None
 last_text = ""
 
 
-async def update_gold():
+async def main():
     global message_id, last_text
 
     while True:
         try:
-            headers = {
-                "x-access-token": GOLD_API_KEY,
-                "Content-Type": "application/json"
-            }
+            gold = yf.Ticker("GC=F")
 
-            response = requests.get(
-                "https://www.goldapi.io/api/XAU/USD",
-                headers=headers,
-                timeout=10
-            )
+            df = gold.history(period="1d", interval="1m")
 
-            data = response.json()
-
-            print(data)
-
-            price = data.get("price")
-
-            if price is None:
-                print("Price not found")
+            if df.empty:
+                print("No data")
                 await asyncio.sleep(10)
                 continue
 
-            text = (
-                "🟡 GOLD LIVE\n\n"
-                f"XAU/USD: {price}$\n\n"
-                "🔄 Auto update every 10 sec"
-            )
+            price = float(df["Close"].iloc[-1])
+
+            text = f"""🟡 GOLD LIVE
+
+💰 Price: {price:.2f} USD
+
+⏱ Update: 10 sec
+"""
 
             if message_id is None:
                 msg = await bot.send_message(
@@ -55,14 +42,13 @@ async def update_gold():
                 message_id = msg.message_id
                 last_text = text
 
-            else:
-                if text != last_text:
-                    await bot.edit_message_text(
-                        chat_id=CHANNEL_ID,
-                        message_id=message_id,
-                        text=text
-                    )
-                    last_text = text
+            elif text != last_text:
+                await bot.edit_message_text(
+                    chat_id=CHANNEL_ID,
+                    message_id=message_id,
+                    text=text
+                )
+                last_text = text
 
             print("Price:", price)
 
@@ -72,4 +58,4 @@ async def update_gold():
         await asyncio.sleep(10)
 
 
-asyncio.run(update_gold())
+asyncio.run(main())
