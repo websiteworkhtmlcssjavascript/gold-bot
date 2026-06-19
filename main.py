@@ -11,10 +11,11 @@ CHANNEL_ID = "@gold_price_live_2026"
 bot = Bot(token=BOT_TOKEN)
 
 message_id = None
+last_text = ""
 
 
 async def update_gold():
-    global message_id
+    global message_id, last_text
 
     while True:
         try:
@@ -29,21 +30,22 @@ async def update_gold():
                 timeout=10
             )
 
-           data = response.json()
-print(data)
+            data = response.json()
 
-price = data.get("price")
+            print(data)
 
-if price is None:
-    await asyncio.sleep(5)
-    continue 
+            price = data.get("price")
 
-            text = f"""🟡 GOLD LIVE
+            if price is None:
+                print("Price not found")
+                await asyncio.sleep(10)
+                continue
 
-💰 XAU/USD: {price} USD
-
-🔄 Update every 5 seconds
-"""
+            text = (
+                "🟡 GOLD LIVE\n\n"
+                f"XAU/USD: {price}$\n\n"
+                "🔄 Auto update every 10 sec"
+            )
 
             if message_id is None:
                 msg = await bot.send_message(
@@ -51,20 +53,23 @@ if price is None:
                     text=text
                 )
                 message_id = msg.message_id
+                last_text = text
 
             else:
-                await bot.edit_message_text(
-                    chat_id=CHANNEL_ID,
-                    message_id=message_id,
-                    text=text
-                )
+                if text != last_text:
+                    await bot.edit_message_text(
+                        chat_id=CHANNEL_ID,
+                        message_id=message_id,
+                        text=text
+                    )
+                    last_text = text
 
-            print(f"Price: {price}")
+            print("Price:", price)
 
         except Exception as e:
             print("ERROR:", e)
 
-        await asyncio.sleep(5)
+        await asyncio.sleep(10)
 
 
 asyncio.run(update_gold())
