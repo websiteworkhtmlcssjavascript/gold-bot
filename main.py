@@ -6,7 +6,7 @@ from telegram import Bot
 BOT_TOKEN = os.getenv("8826488858:AAFLXXaWXnNX00LdJuXT9QweAy1dXTFpt-8")
 GOLD_API_KEY = os.getenv("goldapi-315b0b99d2ec5744f99b0c37edaf77cb-io")
 
-CHANNEL_ID = "https://t.me/+Fa0iM4HG8z82NjE0"
+CHANNEL_ID = "@AAB12AAB_BOT"
 
 bot = Bot(token=BOT_TOKEN)
 
