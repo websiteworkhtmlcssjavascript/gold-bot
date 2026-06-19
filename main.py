@@ -1,38 +1,52 @@
+import os
 import asyncio
-import yfinance as yf
+import requests
 from telegram import Bot
 
-BOT_TOKEN = "8826488858:AAFLXXaWXnNX00LdJuXT9QweAy1dXTFpt-8"
-CHANNEL_ID = "@gold_price_live_2026"
+BOT_TOKEN = os.getenv("BOT_TOKEN")
 GOLD_API_KEY = os.getenv("GOLD_API_KEY")
 
-bot = Bot(BOT_TOKEN)
+CHANNEL_ID = "@gold_price_live_2026"
+
+bot = Bot(token=BOT_TOKEN)
 
 message_id = None
-last_text = ""
+last_price = None
+
+
+async def get_gold_price():
+    headers = {
+        "x-access-token": GOLD_API_KEY,
+        "Content-Type": "application/json"
+    }
+
+    response = requests.get(
+        "https://www.goldapi.io/api/XAU/USD",
+        headers=headers,
+        timeout=15
+    )
+
+    data = response.json()
+
+    if "error" in data:
+        raise Exception(data["error"])
+
+    return float(data["price"])
 
 
 async def main():
-    global message_id, last_text
+    global message_id, last_price
 
     while True:
         try:
-            gold = yf.Ticker("GC=F")
+            price = await get_gold_price()
 
-            df = gold.history(period="1d", interval="1m")
+            text = f"""
+🟡 GOLD LIVE
 
-            if df.empty:
-                print("No data")
-                await asyncio.sleep(60)
-                continue
+💰 XAU/USD : {price}
 
-            price = float(df["Close"].iloc[-1])
-
-            text = f"""🟡 GOLD LIVE
-
-💰 Price: {price:.2f} USD
-
-⏱ Update: 60 sec
+🔄 Update every 10 sec
 """
 
             if message_id is None:
@@ -41,17 +55,18 @@ async def main():
                     text=text
                 )
                 message_id = msg.message_id
-                last_text = text
+                last_price = price
 
-            elif text != last_text:
-                await bot.edit_message_text(
-                    chat_id=CHANNEL_ID,
-                    message_id=message_id,
-                    text=text
-                )
-                last_text = text
+            else:
+                if price != last_price:
+                    await bot.edit_message_text(
+                        chat_id=CHANNEL_ID,
+                        message_id=message_id,
+                        text=text
+                    )
+                    last_price = price
 
-            print("Price:", price)
+            print("Gold:", price)
 
         except Exception as e:
             print("ERROR:", e)
