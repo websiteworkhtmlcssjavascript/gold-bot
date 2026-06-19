@@ -29,9 +29,14 @@ async def update_gold():
                 timeout=10
             )
 
-            data = response.json()
+           data = response.json()
+print(data)
 
-            price = data.get("price")
+price = data.get("price")
+
+if price is None:
+    await asyncio.sleep(5)
+    continue 
 
             text = f"""🟡 GOLD LIVE
 
